@@ -5,16 +5,13 @@
 #include <QDebug>
 #include <QPushButton>
 #include <QLabel>
+#include <QFileDialog>
+#include <QMessageBox>
 
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
 {
-    QFileInfoList files = loadFiles("../Project/songs");
-
-    for (const QFileInfo& fileInfo : files)
-        m_songs.append(SongFile(fileInfo.completeBaseName()));
-
     QVBoxLayout *layout = new QVBoxLayout;
     mp_layout = new QStackedLayout;
 
@@ -42,13 +39,26 @@ QWidget* MainWindow::createStartPage()
     QWidget *startPage = new QWidget;
     QVBoxLayout *startLayout = new QVBoxLayout;
 
+    QHBoxLayout *inputDirLayout = new QHBoxLayout;
+
+    mp_dirPath = new QLineEdit;
+    mp_dirPath->setReadOnly(true);
+    QPushButton *browseButton = new QPushButton("Browse");
+
+    inputDirLayout->addWidget(mp_dirPath);
+    inputDirLayout->addWidget(browseButton);
+
+    connect(browseButton, SIGNAL(clicked()), this, SLOT(openDir()));
+
+
     QPushButton *startButton = new QPushButton("Start");
     connect(startButton, SIGNAL(clicked()), this, SLOT(computeTags()));
 
     mp_progressBar = new QProgressBar;
-    mp_progressBar->setMaximum(m_songs.size() * 2);
     mp_progressBar->setValue(0);
+    mp_progressBar->hide();
 
+    startLayout->addLayout(inputDirLayout);
     startLayout->addWidget(startButton);
     startLayout->addWidget(mp_progressBar);
     startPage->setLayout(startLayout);
@@ -58,7 +68,7 @@ QWidget* MainWindow::createStartPage()
 
 QWidget* MainWindow::createResultTable()
 {
-    mp_resultTable = new QTableWidget(m_songs.size(), 3);
+    mp_resultTable = new QTableWidget(0, 3);
 
     QStringList headerLabels;
     headerLabels << "Filename" << "Author" << "Title";
@@ -73,7 +83,25 @@ QFileInfoList MainWindow::loadFiles(const QString& dirname) const
     if (!dir.exists())
         qDebug() << "Input dir does not exist";
 
-    return dir.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);
+    return dir.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Files);
+}
+
+void MainWindow::openDir()
+{
+    QString dirPath = QFileDialog::getExistingDirectory(this, "Choose Directory", QString(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+    if (!dirPath.isNull())
+    {
+        mp_dirPath->setText(dirPath);
+
+        QFileInfoList files = loadFiles(dirPath);
+
+        for (const QFileInfo& fileInfo : files)
+            m_songs.append(SongFile(fileInfo.completeBaseName()));
+
+        mp_progressBar->setMaximum(m_songs.size() * 2);
+        mp_resultTable->setRowCount(m_songs.size());
+    }
 }
 
 void MainWindow::fillSong(SongFile& song, const QString& separator)
@@ -93,6 +121,15 @@ void MainWindow::fillSong(SongFile& song, const QString& author, const QString& 
 
 void MainWindow::computeTags()
 {
+    const QString dirPath = mp_dirPath->text();
+    if (dirPath.isEmpty())
+    {
+        QMessageBox::critical(this, "Input dir error", "Input dir path is empty", QMessageBox::Ok);
+        return;
+    }
+
+    mp_progressBar->show();
+
     QList<SongFile*> songsToBeAsked;
 
     for (auto& song : m_songs)

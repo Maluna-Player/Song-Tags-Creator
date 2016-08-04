@@ -5,6 +5,7 @@
 #include <QStackedLayout>
 #include <QTableWidget>
 #include <QProgressBar>
+#include <QLineEdit>
 #include "SongFile.h"
 
 class MainWindow : public QWidget
@@ -23,6 +24,8 @@ class MainWindow : public QWidget
 
         QProgressBar *mp_progressBar;
 
+        QLineEdit *mp_dirPath;
+
 
         QWidget* createStartPage();
 
@@ -39,6 +42,8 @@ class MainWindow : public QWidget
     private slots:
 
         void computeTags();
+
+        void openDir();
 
     signals:
 
