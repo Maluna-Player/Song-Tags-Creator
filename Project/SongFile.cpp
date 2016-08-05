@@ -27,9 +27,9 @@ QString SongFile::getAuthor() const
     return m_author;
 }
 
-QList<QPair<QString,QString>> SongFile::getChoices(const QString& separator) const
+QList<Choice_t> SongFile::getChoices(const QString& separator) const
 {
-    QList<QPair<QString,QString>> choices;
+    QList<Choice_t> choices;
     int count = m_filename.count(separator);
 
     for (int i = 0; i < count; ++i)

@@ -158,7 +158,7 @@ void MainWindow::computeTags()
     for (SongFile *currentSong : songsToBeAsked)
     {
         unsigned int maxRefs{0};
-        QPair<QString,QString> bestChoice;
+        Choice_t bestChoice;
 
         const QString separator = (currentSong->getFilename().contains(" - ") ? " - " : "-");
 

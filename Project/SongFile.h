@@ -5,6 +5,8 @@
 #include <QPair>
 #include <QList>
 
+using Choice_t = QPair<QString,QString>;
+
 class SongFile
 {
     private:
@@ -27,7 +29,7 @@ class SongFile
 
         QString getAuthor() const;
 
-        QList<QPair<QString,QString>> getChoices(const QString& separator) const;
+        QList<Choice_t> getChoices(const QString& separator) const;
 
         void fill(const QString& author, const QString& title);
 };

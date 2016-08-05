@@ -2,6 +2,7 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QPushButton>
+#include <QRadioButton>
 
 
 const QString ChoiceDialog::radioSeparator = "\t\t\t\t\t\t\t\t\t\t";
@@ -19,23 +20,15 @@ ChoiceDialog::ChoiceDialog(const SongFile& song, const QString& separator, QWidg
     layout->addWidget(new QLabel("Author"), 2, 1);
     layout->addWidget(new QLabel("Title"), 2, 2);
 
-    unsigned int row { 4 };
-    auto choices = song.getChoices(separator);
-    for (const auto& choice : choices)
-    {
-        m_choices.append(new QRadioButton(choice.first + radioSeparator + choice.second));
-        layout->addWidget(m_choices.last(), row, 0, 1, 3);
-        ++row;
-    }
-
-    m_choices.first()->setChecked(true);
+    mp_choicesGroup = new QButtonGroup;
 
     QPushButton *validateButton = new QPushButton("Valider");
     QPushButton *ignoreButton = new QPushButton("Ignorer");
 
-    layout->setRowMinimumHeight(row, 50);
-    layout->addWidget(validateButton, row+1, 1);
-    layout->addWidget(ignoreButton, row+1, 2);
+    layout->addLayout(createChoicesLayout(song.getChoices(separator)), 4, 0, 1, 3);
+    layout->setRowMinimumHeight(5, 50);
+    layout->addWidget(validateButton, 6, 1);
+    layout->addWidget(ignoreButton, 6, 2);
 
     setLayout(layout);
 
@@ -48,20 +41,53 @@ ChoiceDialog::~ChoiceDialog()
 
 }
 
-QPair<QString,QString> ChoiceDialog::getSelectedChoice()
+QVBoxLayout* ChoiceDialog::createChoicesLayout(const QList<Choice_t>& choices)
+{
+    QVBoxLayout *choicesLayout = new QVBoxLayout;
+
+    unsigned int row { 1 };
+    for (const auto& choice : choices)
+    {
+        QRadioButton *button = new QRadioButton(choice.first + radioSeparator + choice.second);
+        choicesLayout->addWidget(button);
+        mp_choicesGroup->addButton(button, row);
+
+        ++row;
+    }
+
+    QRadioButton *button = new QRadioButton("Autre");
+    choicesLayout->addWidget(button);
+    mp_choicesGroup->addButton(button, 0);
+
+    if (mp_choicesGroup->button(1))
+        mp_choicesGroup->button(1)->setChecked(true);
+    else
+        mp_choicesGroup->button(0)->setChecked(true);
+
+    QHBoxLayout *customChoiceLayout = new QHBoxLayout;
+    mp_authorEdit = new QLineEdit;
+    mp_titleEdit = new QLineEdit;
+    customChoiceLayout->addWidget(mp_authorEdit);
+    customChoiceLayout->addWidget(mp_titleEdit);
+
+    choicesLayout->addLayout(customChoiceLayout);
+
+    return choicesLayout;
+}
+
+Choice_t ChoiceDialog::getSelectedChoice()
 {
     if (exec() == QDialog::Accepted)
     {
-        for (QRadioButton *button : m_choices)
+        auto id { mp_choicesGroup->checkedId() };
+        if (id > 0)
         {
-            if (button->isChecked())
-            {
-                auto elements = button->text().split(radioSeparator);
-                return qMakePair(elements[0], elements[1]);
-            }
+            auto elements = mp_choicesGroup->button(id)->text().split(radioSeparator);
+            return qMakePair(elements[0], elements[1]);
         }
-
+        else if (id == 0)
+            return qMakePair(mp_authorEdit->text(), mp_titleEdit->text());
     }
 
-    return QPair<QString,QString>("", "");
+    return Choice_t("", "");
 }
