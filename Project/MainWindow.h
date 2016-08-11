@@ -14,6 +14,8 @@ class MainWindow : public QWidget
 
     private:
 
+        enum ResultColumn { FILENAME, AUTHOR, TITLE, REVERSE, COLUMNS_COUNT };
+
         static const int minimumRefs { 3 };
 
         QVector<SongFile> m_songs;
@@ -44,6 +46,8 @@ class MainWindow : public QWidget
         void computeTags();
 
         void openDir();
+
+        void reverse(int row);
 
     signals:
 

@@ -7,6 +7,7 @@
 #include <QLabel>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QSignalMapper>
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -68,10 +69,10 @@ QWidget* MainWindow::createStartPage()
 
 QWidget* MainWindow::createResultTable()
 {
-    mp_resultTable = new QTableWidget(0, 3);
+    mp_resultTable = new QTableWidget(0, COLUMNS_COUNT);
 
     QStringList headerLabels;
-    headerLabels << "Filename" << "Author" << "Title";
+    headerLabels << "Filename" << "Author" << "Title" << "";
     mp_resultTable->setHorizontalHeaderLabels(headerLabels);
 
     return mp_resultTable;
@@ -213,13 +214,33 @@ void MainWindow::computeTags()
 
  void MainWindow::displayResults()
  {
+     QSignalMapper *mapper = new QSignalMapper(this);
+     connect(mapper, SIGNAL(mapped(int)), this, SLOT(reverse(int)));
+
      for (int i = 0; i < m_songs.size(); ++i)
      {
-         mp_resultTable->setItem(i, 0, new QTableWidgetItem(m_songs.at(i).getFilename()));
-         mp_resultTable->setItem(i, 1, new QTableWidgetItem(m_songs.at(i).getAuthor()));
-         mp_resultTable->setItem(i, 2, new QTableWidgetItem(m_songs.at(i).getTitle()));
+         mp_resultTable->setItem(i, FILENAME, new QTableWidgetItem(m_songs.at(i).getFilename()));
+         mp_resultTable->setItem(i, AUTHOR, new QTableWidgetItem(m_songs.at(i).getAuthor()));
+         mp_resultTable->setItem(i, TITLE, new QTableWidgetItem(m_songs.at(i).getTitle()));
+
+
+         QPushButton *reverseButton = new QPushButton(QIcon("../Project/images/reverse.png"), "");
+         mp_resultTable->setCellWidget(i, REVERSE, reverseButton);
+
+         connect(reverseButton, SIGNAL(clicked()), mapper, SLOT(map()));
+         mapper->setMapping(reverseButton, i);
      }
 
      mp_resultTable->resizeColumnsToContents();
      mp_layout->setCurrentIndex(1);
+     resize(800, 600);
+ }
+
+ void MainWindow::reverse(int row)
+ {
+    const QString newAuthor = mp_resultTable->item(row, TITLE)->text();
+    const QString newTitle = mp_resultTable->item(row, AUTHOR)->text();
+
+    mp_resultTable->item(row, AUTHOR)->setText(newAuthor);
+    mp_resultTable->item(row, TITLE)->setText(newTitle);
  }
