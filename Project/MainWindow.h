@@ -14,7 +14,7 @@ class MainWindow : public QWidget
 
     private:
 
-        enum ResultColumn { FILENAME, AUTHOR, TITLE, REVERSE, COLUMNS_COUNT };
+        enum ResultColumn { FILENAME, AUTHOR, TITLE, FILENAME_CHECKBOX, REVERSE, COLUMNS_COUNT };
 
         static const int minimumRefs { 3 };
 
@@ -38,6 +38,8 @@ class MainWindow : public QWidget
         void fillSong(SongFile& song, const QString& separator);
 
         void fillSong(SongFile& song, const QString& author, const QString& title);
+
+        static QWidget* createCenteredCheckBox();
 
         void displayResults();
 
