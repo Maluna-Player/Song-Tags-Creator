@@ -6,6 +6,7 @@
 #include <QTableWidget>
 #include <QProgressBar>
 #include <QLineEdit>
+#include <QListWidget>
 #include "SongFile.h"
 
 class MainWindow : public QWidget
@@ -27,6 +28,8 @@ class MainWindow : public QWidget
         QProgressBar *mp_progressBar;
 
         QLineEdit *mp_dirPath;
+
+        QListWidget *mp_SongsPreviewList;
 
 
         QWidget* createStartPage();

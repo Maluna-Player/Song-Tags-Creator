@@ -53,16 +53,23 @@ QWidget* MainWindow::createStartPage()
     connect(browseButton, SIGNAL(clicked()), this, SLOT(openDir()));
 
 
+    QHBoxLayout *songsLayout = new QHBoxLayout;
+
+    mp_SongsPreviewList = new QListWidget;
+
     QPushButton *startButton = new QPushButton("Start");
     connect(startButton, SIGNAL(clicked()), this, SLOT(computeTags()));
+
+    songsLayout->addWidget(mp_SongsPreviewList);
+    songsLayout->addWidget(startButton);
 
     mp_progressBar = new QProgressBar;
     mp_progressBar->setValue(0);
     mp_progressBar->hide();
 
     startLayout->addLayout(inputDirLayout);
-    startLayout->addWidget(startButton);
     startLayout->addWidget(mp_progressBar);
+    startLayout->addLayout(songsLayout);
     startPage->setLayout(startLayout);
 
     return startPage;
@@ -95,11 +102,16 @@ void MainWindow::openDir()
     if (!dirPath.isNull())
     {
         mp_dirPath->setText(dirPath);
+        m_songs.clear();
+        mp_SongsPreviewList->clear();
 
         QFileInfoList files = loadFiles(dirPath);
 
         for (const QFileInfo& fileInfo : files)
+        {
             m_songs.append(SongFile(fileInfo.completeBaseName()));
+            mp_SongsPreviewList->addItem(fileInfo.fileName());
+        }
 
         mp_progressBar->setMaximum(m_songs.size() * 2);
         mp_resultTable->setRowCount(m_songs.size());
