@@ -234,7 +234,10 @@ void MainWindow::displayResults()
 
     for (int i = 0; i < m_songs.size(); ++i)
     {
-        mp_resultTable->setItem(i, FILENAME, new QTableWidgetItem(m_songs.at(i).getFilename()));
+        QTableWidgetItem *filenameItem = new QTableWidgetItem(m_songs.at(i).getFilename());
+        filenameItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+        mp_resultTable->setItem(i, FILENAME, filenameItem);
         mp_resultTable->setItem(i, AUTHOR, new QTableWidgetItem(m_songs.at(i).getAuthor()));
         mp_resultTable->setItem(i, TITLE, new QTableWidgetItem(m_songs.at(i).getTitle()));
         mp_resultTable->setCellWidget(i, FILENAME_CHECKBOX, createCenteredCheckBox());
