@@ -22,15 +22,18 @@ ChoiceDialog::ChoiceDialog(const SongFile& song, const QString& separator, QWidg
 
     mp_choicesGroup = new QButtonGroup;
 
+    QPushButton *reverseButton = new QPushButton(QIcon("../Project/images/reverse.png"), "");
     QPushButton *validateButton = new QPushButton("Valider");
     QPushButton *ignoreButton = new QPushButton("Ignorer");
     QPushButton *ignoreAllButton = new QPushButton("Tout ignorer");
 
+    reverseButton->setMaximumWidth(40);
     validateButton->setMinimumWidth(100);
     ignoreButton->setMinimumWidth(100);
     ignoreAllButton->setMinimumWidth(100);
 
     layout->addLayout(createChoicesLayout(song.getChoices(separator)), 4, 0, 1, 3);
+    layout->addWidget(reverseButton, 4, 3, Qt::AlignCenter);
     layout->setRowMinimumHeight(5, 50);
     layout->addWidget(validateButton, 6, 1);
     layout->addWidget(ignoreButton, 6, 2);
@@ -38,6 +41,7 @@ ChoiceDialog::ChoiceDialog(const SongFile& song, const QString& separator, QWidg
 
     setLayout(layout);
 
+    connect(reverseButton, SIGNAL(clicked()), this, SLOT(reverseChoices()));
     connect(validateButton, SIGNAL(clicked()), this, SLOT(accept()));
     connect(ignoreButton, SIGNAL(clicked()), this, SLOT(reject()));
     connect(ignoreAllButton, SIGNAL(clicked()), this, SLOT(ignoreAll()));
@@ -107,6 +111,18 @@ void ChoiceDialog::ignoreAll()
 {
     m_ignoreAll = true;
     reject();
+}
+
+void ChoiceDialog::reverseChoices()
+{
+    auto buttonsCount { mp_choicesGroup->buttons().size() };
+
+    for (auto i = 1; i < buttonsCount; ++i)
+    {
+        auto *button = mp_choicesGroup->button(i);
+        auto elements = button->text().split(radioSeparator);
+        button->setText(elements[1] + radioSeparator + elements[0]);
+    }
 }
 
 bool ChoiceDialog::allIgnored() const

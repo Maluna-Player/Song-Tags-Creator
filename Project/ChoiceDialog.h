@@ -35,6 +35,8 @@ class ChoiceDialog : public QDialog
 
         void ignoreAll();
 
+        void reverseChoices();
+
     public:
 
         ChoiceDialog(const SongFile& song, const QString& separator, QWidget *parent = 0);
