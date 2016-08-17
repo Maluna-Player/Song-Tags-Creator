@@ -10,6 +10,8 @@
 
 class ChoiceDialog : public QDialog
 {
+    Q_OBJECT
+
     private:
 
         static const QString radioSeparator;
@@ -20,13 +22,25 @@ class ChoiceDialog : public QDialog
 
         QLineEdit *mp_authorEdit;
 
+        Choice_t m_choice;
+
+        bool m_ignoreAll;
+
 
         QVBoxLayout* createChoicesLayout(const QList<Choice_t>& choices);
+
+        void execute();
+
+    private slots:
+
+        void ignoreAll();
 
     public:
 
         ChoiceDialog(const SongFile& song, const QString& separator, QWidget *parent = 0);
         virtual ~ChoiceDialog();
+
+        bool allIgnored() const;
 
         Choice_t getSelectedChoice();
 };

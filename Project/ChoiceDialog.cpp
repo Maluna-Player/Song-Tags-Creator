@@ -8,7 +8,7 @@
 const QString ChoiceDialog::radioSeparator = "\t\t\t\t\t\t\t\t\t\t";
 
 ChoiceDialog::ChoiceDialog(const SongFile& song, const QString& separator, QWidget *parent)
-    : QDialog(parent)
+    : QDialog(parent), m_ignoreAll(false)
 {
     QGridLayout *layout = new QGridLayout;
     layout->setRowMinimumHeight(1, 35);
@@ -24,16 +24,25 @@ ChoiceDialog::ChoiceDialog(const SongFile& song, const QString& separator, QWidg
 
     QPushButton *validateButton = new QPushButton("Valider");
     QPushButton *ignoreButton = new QPushButton("Ignorer");
+    QPushButton *ignoreAllButton = new QPushButton("Tout ignorer");
+
+    validateButton->setMinimumWidth(100);
+    ignoreButton->setMinimumWidth(100);
+    ignoreAllButton->setMinimumWidth(100);
 
     layout->addLayout(createChoicesLayout(song.getChoices(separator)), 4, 0, 1, 3);
     layout->setRowMinimumHeight(5, 50);
     layout->addWidget(validateButton, 6, 1);
     layout->addWidget(ignoreButton, 6, 2);
+    layout->addWidget(ignoreAllButton, 6, 3);
 
     setLayout(layout);
 
     connect(validateButton, SIGNAL(clicked()), this, SLOT(accept()));
     connect(ignoreButton, SIGNAL(clicked()), this, SLOT(reject()));
+    connect(ignoreAllButton, SIGNAL(clicked()), this, SLOT(ignoreAll()));
+
+    execute();
 }
 
 ChoiceDialog::~ChoiceDialog()
@@ -56,7 +65,6 @@ QVBoxLayout* ChoiceDialog::createChoicesLayout(const QList<Choice_t>& choices)
     }
 
     QRadioButton *button = new QRadioButton("Autre");
-    choicesLayout->addWidget(button);
     mp_choicesGroup->addButton(button, 0);
 
     if (mp_choicesGroup->button(1))
@@ -65,8 +73,13 @@ QVBoxLayout* ChoiceDialog::createChoicesLayout(const QList<Choice_t>& choices)
         mp_choicesGroup->button(0)->setChecked(true);
 
     QHBoxLayout *customChoiceLayout = new QHBoxLayout;
+
     mp_authorEdit = new QLineEdit;
     mp_titleEdit = new QLineEdit;
+    mp_authorEdit->setPlaceholderText("Author");
+    mp_titleEdit->setPlaceholderText("Title");
+
+    customChoiceLayout->addWidget(button);
     customChoiceLayout->addWidget(mp_authorEdit);
     customChoiceLayout->addWidget(mp_titleEdit);
 
@@ -75,7 +88,7 @@ QVBoxLayout* ChoiceDialog::createChoicesLayout(const QList<Choice_t>& choices)
     return choicesLayout;
 }
 
-Choice_t ChoiceDialog::getSelectedChoice()
+void ChoiceDialog::execute()
 {
     if (exec() == QDialog::Accepted)
     {
@@ -83,11 +96,25 @@ Choice_t ChoiceDialog::getSelectedChoice()
         if (id > 0)
         {
             auto elements = mp_choicesGroup->button(id)->text().split(radioSeparator);
-            return qMakePair(elements[0], elements[1]);
+            m_choice = qMakePair(elements[0], elements[1]);
         }
         else if (id == 0)
-            return qMakePair(mp_authorEdit->text(), mp_titleEdit->text());
+            m_choice = qMakePair(mp_authorEdit->text(), mp_titleEdit->text());
     }
+}
 
-    return Choice_t("", "");
+void ChoiceDialog::ignoreAll()
+{
+    m_ignoreAll = true;
+    reject();
+}
+
+bool ChoiceDialog::allIgnored() const
+{
+    return m_ignoreAll;
+}
+
+Choice_t ChoiceDialog::getSelectedChoice()
+{
+    return m_choice;
 }

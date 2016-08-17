@@ -199,6 +199,9 @@ void MainWindow::computeTags()
         else
         {
             ChoiceDialog dialog(*currentSong, separator);
+            if (dialog.allIgnored())
+                break;
+
             auto choice = dialog.getSelectedChoice();
             fillSong(*currentSong, choice.first, choice.second);
         }
