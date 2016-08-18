@@ -26,6 +26,8 @@ class ChoiceDialog : public QDialog
 
         bool m_ignoreAll;
 
+        bool m_abort;
+
 
         QVBoxLayout* createChoicesLayout(const QList<Choice_t>& choices);
 
@@ -35,6 +37,8 @@ class ChoiceDialog : public QDialog
 
         void ignoreAll();
 
+        void abort();
+
         void reverseChoices();
 
     public:
@@ -43,6 +47,8 @@ class ChoiceDialog : public QDialog
         virtual ~ChoiceDialog();
 
         bool allIgnored() const;
+
+        bool aborted() const;
 
         Choice_t getSelectedChoice();
 };

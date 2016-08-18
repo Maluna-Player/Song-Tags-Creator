@@ -50,7 +50,7 @@ QWidget* MainWindow::createStartPage()
     inputDirLayout->addWidget(mp_dirPath);
     inputDirLayout->addWidget(browseButton);
 
-    connect(browseButton, SIGNAL(clicked()), this, SLOT(openDir()));
+    connect(browseButton, SIGNAL(clicked()), this, SLOT(selectDir()));
 
 
     QHBoxLayout *songsLayout = new QHBoxLayout;
@@ -64,7 +64,6 @@ QWidget* MainWindow::createStartPage()
     songsLayout->addWidget(startButton);
 
     mp_progressBar = new QProgressBar;
-    mp_progressBar->setValue(0);
     mp_progressBar->hide();
 
     startLayout->addLayout(inputDirLayout);
@@ -86,36 +85,42 @@ QWidget* MainWindow::createResultTable()
     return mp_resultTable;
 }
 
-QFileInfoList MainWindow::loadFiles(const QString& dirname) const
+QFileInfoList MainWindow::loadFiles(const QString& dirPath) const
 {
-    QDir dir(dirname);
+    QDir dir(dirPath);
     if (!dir.exists())
         qDebug() << "Input dir does not exist";
 
     return dir.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Files);
 }
 
-void MainWindow::openDir()
+void MainWindow::openDir(const QString& dirPath)
+{
+    mp_dirPath->setText(dirPath);
+    m_songs.clear();
+    mp_SongsPreviewList->clear();
+
+    QFileInfoList files = loadFiles(dirPath);
+
+    for (const QFileInfo& fileInfo : files)
+    {
+        m_songs.append(SongFile(fileInfo.completeBaseName()));
+        mp_SongsPreviewList->addItem(fileInfo.fileName());
+    }
+
+    mp_progressBar->setValue(0);
+    mp_progressBar->setMaximum(m_songs.size() * 2);
+    mp_progressBar->hide();
+    mp_resultTable->setRowCount(m_songs.size());
+
+}
+
+void MainWindow::selectDir()
 {
     QString dirPath = QFileDialog::getExistingDirectory(this, "Choose Directory", QString(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 
     if (!dirPath.isNull())
-    {
-        mp_dirPath->setText(dirPath);
-        m_songs.clear();
-        mp_SongsPreviewList->clear();
-
-        QFileInfoList files = loadFiles(dirPath);
-
-        for (const QFileInfo& fileInfo : files)
-        {
-            m_songs.append(SongFile(fileInfo.completeBaseName()));
-            mp_SongsPreviewList->addItem(fileInfo.fileName());
-        }
-
-        mp_progressBar->setMaximum(m_songs.size() * 2);
-        mp_resultTable->setRowCount(m_songs.size());
-    }
+        openDir(dirPath);
 }
 
 void MainWindow::fillSong(SongFile& song, const QString& separator)
@@ -199,6 +204,13 @@ void MainWindow::computeTags()
         else
         {
             ChoiceDialog dialog(*currentSong, separator);
+
+            if (dialog.aborted())
+            {
+                openDir(mp_dirPath->text());
+                return;
+            }
+
             if (dialog.allIgnored())
                 break;
 

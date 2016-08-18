@@ -36,7 +36,9 @@ class MainWindow : public QWidget
 
         QWidget* createResultTable();
 
-        QFileInfoList loadFiles(const QString& dirname) const;
+        QFileInfoList loadFiles(const QString& dirPath) const;
+
+        void openDir(const QString& dirPath);
 
         void fillSong(SongFile& song, const QString& separator);
 
@@ -50,7 +52,7 @@ class MainWindow : public QWidget
 
         void computeTags();
 
-        void openDir();
+        void selectDir();
 
         void reverse(int row);
 

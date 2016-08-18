@@ -8,7 +8,7 @@
 const QString ChoiceDialog::radioSeparator = "\t\t\t\t\t\t\t\t\t\t";
 
 ChoiceDialog::ChoiceDialog(const SongFile& song, const QString& separator, QWidget *parent)
-    : QDialog(parent), m_ignoreAll(false)
+    : QDialog(parent), m_ignoreAll(false), m_abort(false)
 {
     QGridLayout *layout = new QGridLayout;
     layout->setRowMinimumHeight(1, 35);
@@ -26,18 +26,21 @@ ChoiceDialog::ChoiceDialog(const SongFile& song, const QString& separator, QWidg
     QPushButton *validateButton = new QPushButton("Valider");
     QPushButton *ignoreButton = new QPushButton("Ignorer");
     QPushButton *ignoreAllButton = new QPushButton("Tout ignorer");
+    QPushButton *abortButton = new QPushButton("Abandonner");
 
     reverseButton->setMaximumWidth(40);
     validateButton->setMinimumWidth(100);
     ignoreButton->setMinimumWidth(100);
     ignoreAllButton->setMinimumWidth(100);
+    abortButton->setMinimumWidth(100);
 
     layout->addLayout(createChoicesLayout(song.getChoices(separator)), 4, 0, 1, 3);
     layout->addWidget(reverseButton, 4, 3, Qt::AlignCenter);
     layout->setRowMinimumHeight(5, 50);
-    layout->addWidget(validateButton, 6, 1);
-    layout->addWidget(ignoreButton, 6, 2);
-    layout->addWidget(ignoreAllButton, 6, 3);
+    layout->addWidget(validateButton, 6, 2);
+    layout->addWidget(ignoreButton, 6, 3);
+    layout->addWidget(ignoreAllButton, 7, 2);
+    layout->addWidget(abortButton, 7, 3);
 
     setLayout(layout);
 
@@ -45,6 +48,7 @@ ChoiceDialog::ChoiceDialog(const SongFile& song, const QString& separator, QWidg
     connect(validateButton, SIGNAL(clicked()), this, SLOT(accept()));
     connect(ignoreButton, SIGNAL(clicked()), this, SLOT(reject()));
     connect(ignoreAllButton, SIGNAL(clicked()), this, SLOT(ignoreAll()));
+    connect(abortButton, SIGNAL(clicked()), this, SLOT(abort()));
 
     execute();
 }
@@ -113,6 +117,12 @@ void ChoiceDialog::ignoreAll()
     reject();
 }
 
+void ChoiceDialog::abort()
+{
+    m_abort = true;
+    reject();
+}
+
 void ChoiceDialog::reverseChoices()
 {
     auto buttonsCount { mp_choicesGroup->buttons().size() };
@@ -128,6 +138,11 @@ void ChoiceDialog::reverseChoices()
 bool ChoiceDialog::allIgnored() const
 {
     return m_ignoreAll;
+}
+
+bool ChoiceDialog::aborted() const
+{
+    return m_abort;
 }
 
 Choice_t ChoiceDialog::getSelectedChoice()
