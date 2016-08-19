@@ -5,6 +5,7 @@
 #include <QStackedLayout>
 #include <QTableWidget>
 #include <QProgressBar>
+#include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
 #include "SongFile.h"
@@ -26,6 +27,8 @@ class MainWindow : public QWidget
         QProgressBar *mp_progressBar;
 
         QLineEdit *mp_dirPath;
+
+        QLabel *mp_filesCountLabel;
 
         QListWidget *mp_SongsPreviewList;
 

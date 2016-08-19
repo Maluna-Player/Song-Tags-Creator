@@ -3,7 +3,6 @@
 #include <QDir>
 #include <QDebug>
 #include <QPushButton>
-#include <QLabel>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QSignalMapper>
@@ -54,6 +53,7 @@ QWidget* MainWindow::createStartPage()
 
     QHBoxLayout *songsLayout = new QHBoxLayout;
 
+    mp_filesCountLabel = new QLabel;
     mp_SongsPreviewList = new QListWidget;
 
     QPushButton *startButton = new QPushButton("Start");
@@ -67,6 +67,7 @@ QWidget* MainWindow::createStartPage()
 
     startLayout->addLayout(inputDirLayout);
     startLayout->addWidget(mp_progressBar);
+    startLayout->addWidget(mp_filesCountLabel);
     startLayout->addLayout(songsLayout);
     startPage->setLayout(startLayout);
 
@@ -107,6 +108,7 @@ void MainWindow::openDir(const QString& dirPath)
         mp_SongsPreviewList->addItem(fileInfo.fileName());
     }
 
+    mp_filesCountLabel->setText(QString::number(m_songs.size()) + " file(s)");
     mp_progressBar->setValue(0);
     mp_progressBar->setMaximum(m_songs.size());
     mp_progressBar->hide();
@@ -128,6 +130,12 @@ void MainWindow::computeTags()
     if (dirPath.isEmpty())
     {
         QMessageBox::critical(this, "Input dir error", "Input dir path is empty", QMessageBox::Ok);
+        return;
+    }
+
+    if (m_songs.isEmpty())
+    {
+        QMessageBox::critical(this, "Input dir error", "Input dir is empty", QMessageBox::Ok);
         return;
     }
 
