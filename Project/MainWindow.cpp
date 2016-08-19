@@ -1,6 +1,5 @@
 #include "MainWindow.h"
 #include <QVBoxLayout>
-#include "ChoiceDialog.h"
 #include <QDir>
 #include <QDebug>
 #include <QPushButton>
@@ -9,6 +8,7 @@
 #include <QMessageBox>
 #include <QSignalMapper>
 #include <QCheckBox>
+#include "TagsManager.h"
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -27,7 +27,6 @@ MainWindow::MainWindow(QWidget *parent)
     layout->addWidget(quitButton);
     setLayout(layout);
 
-    connect(this, SIGNAL(processedSongs(int)), mp_progressBar, SLOT(setValue(int)));
     connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
 }
 
@@ -109,7 +108,7 @@ void MainWindow::openDir(const QString& dirPath)
     }
 
     mp_progressBar->setValue(0);
-    mp_progressBar->setMaximum(m_songs.size() * 2);
+    mp_progressBar->setMaximum(m_songs.size());
     mp_progressBar->hide();
     mp_resultTable->setRowCount(m_songs.size());
 
@@ -123,21 +122,6 @@ void MainWindow::selectDir()
         openDir(dirPath);
 }
 
-void MainWindow::fillSong(SongFile& song, const QString& separator)
-{
-    auto elements = song.getFilename().split(separator);
-    song.fill(elements[0], elements[1]);
-
-    emit processedSongs(mp_progressBar->value() + 1);
-}
-
-void MainWindow::fillSong(SongFile& song, const QString& author, const QString& title)
-{
-    song.fill(author, title);
-
-    emit processedSongs(mp_progressBar->value() + 1);
-}
-
 void MainWindow::computeTags()
 {
     const QString dirPath = mp_dirPath->text();
@@ -149,95 +133,13 @@ void MainWindow::computeTags()
 
     mp_progressBar->show();
 
-    QList<SongFile*> songsToBeAsked;
+    TagsManager manager;
+    connect(&manager, SIGNAL(processedSongs(int)), mp_progressBar, SLOT(setValue(int)));
 
-    for (auto& song : m_songs)
-    {
-        if (song.getFilename().contains(" - "))
-        {
-            int count = song.getFilename().count(" - ");
-            if (count == 1)
-                fillSong(song, " - ");
-            else
-                songsToBeAsked.append(&song);
-        }
-        else if (song.getFilename().contains("-"))
-        {
-            int count = song.getFilename().count("-");
-            if (count == 1)
-                fillSong(song, "-");
-            else
-                songsToBeAsked.append(&song);
-        }
-        else
-            fillSong(song, "", song.getFilename());
-    }
-
-    // Asked songs
-    for (SongFile *currentSong : songsToBeAsked)
-    {
-        unsigned int maxRefs{0};
-        Choice_t bestChoice;
-
-        const QString separator = (currentSong->getFilename().contains(" - ") ? " - " : "-");
-
-        auto choices = currentSong->getChoices(separator);
-        for (auto choice : choices)
-        {
-            unsigned int cpt{0};
-
-            for (const auto& song : m_songs)
-            {
-                if (choice.first == song.getAuthor())
-                    ++cpt;
-            }
-
-            if (cpt > maxRefs)
-            {
-                maxRefs = cpt;
-                bestChoice = choice;
-            }
-        }
-
-        if (maxRefs >= minimumRefs)
-            fillSong(*currentSong, bestChoice.first, bestChoice.second);
-        else
-        {
-            ChoiceDialog dialog(*currentSong, separator);
-
-            if (dialog.aborted())
-            {
-                openDir(mp_dirPath->text());
-                return;
-            }
-
-            if (dialog.allIgnored())
-                break;
-
-            auto choice = dialog.getSelectedChoice();
-            fillSong(*currentSong, choice.first, choice.second);
-        }
-    }
-
-    // Reversed songs
-    for (auto& currentSong : m_songs)
-    {
-        unsigned int count{0};
-        const auto& songTitle = currentSong.getTitle();
-
-        for (const auto& song : m_songs)
-        {
-            if (songTitle == song.getAuthor())
-                ++count;
-        }
-
-        if (count >= minimumRefs)
-            currentSong.fill(currentSong.getTitle(), currentSong.getAuthor());
-
-        emit processedSongs(mp_progressBar->value() + 1);
-    }
-
-    displayResults();
+    if (!manager.compute(m_songs))
+        openDir(mp_dirPath->text());
+    else
+        displayResults();
 }
 
 QWidget* MainWindow::createCenteredCheckBox()

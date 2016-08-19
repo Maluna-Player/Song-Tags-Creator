@@ -17,8 +17,6 @@ class MainWindow : public QWidget
 
         enum ResultColumn { FILENAME, AUTHOR, TITLE, FILENAME_CHECKBOX, REVERSE, COLUMNS_COUNT };
 
-        static const int minimumRefs { 3 };
-
         QVector<SongFile> m_songs;
 
         QStackedLayout *mp_layout;
@@ -36,15 +34,11 @@ class MainWindow : public QWidget
 
         QWidget* createResultTable();
 
+        static QWidget* createCenteredCheckBox();
+
         QFileInfoList loadFiles(const QString& dirPath) const;
 
         void openDir(const QString& dirPath);
-
-        void fillSong(SongFile& song, const QString& separator);
-
-        void fillSong(SongFile& song, const QString& author, const QString& title);
-
-        static QWidget* createCenteredCheckBox();
 
         void displayResults();
 
@@ -55,10 +49,6 @@ class MainWindow : public QWidget
         void selectDir();
 
         void reverse(int row);
-
-    signals:
-
-        void processedSongs(int songsNb);
 
     public:
 

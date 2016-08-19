@@ -32,6 +32,8 @@ class SongFile
         QList<Choice_t> getChoices(const QString& separator) const;
 
         void fill(const QString& author, const QString& title);
+
+        void reverse();
 };
 
 #endif // SONGFILE

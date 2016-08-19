@@ -43,3 +43,8 @@ void SongFile::fill(const QString& author, const QString& title)
     m_author = author;
     m_title = title;
 }
+
+void SongFile::reverse()
+{
+    fill(getTitle(), getAuthor());
+}

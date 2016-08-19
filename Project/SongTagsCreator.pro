@@ -9,9 +9,11 @@ TEMPLATE = app
 SOURCES += main.cpp \
     MainWindow.cpp \
     SongFile.cpp \
-    ChoiceDialog.cpp
+    ChoiceDialog.cpp \
+    TagsManager.cpp
 
 HEADERS += \
     MainWindow.h \
     SongFile.h \
-    ChoiceDialog.h
+    ChoiceDialog.h \
+    TagsManager.h
