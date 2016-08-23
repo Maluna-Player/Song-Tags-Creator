@@ -6,7 +6,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QSignalMapper>
-#include <QCheckBox>
+#include <QHeaderView>
 #include "TagsManager.h"
 
 
@@ -76,7 +76,15 @@ QWidget* MainWindow::createStartPage()
 
 QWidget* MainWindow::createResultTable()
 {
-    mp_resultTable = new QTableWidget(0, COLUMNS_COUNT);
+    QCheckBox *checkAllBox = new QCheckBox("Check all");
+    connect(checkAllBox, SIGNAL(clicked(bool)), this, SLOT(checkAll(bool)));
+
+    mp_resultTable = new QTableWidget(1, COLUMNS_COUNT);
+    mp_resultTable->setItem(0, FILENAME, createEmptyTableItem());
+    mp_resultTable->setItem(0, AUTHOR, createEmptyTableItem());
+    mp_resultTable->setItem(0, TITLE, createEmptyTableItem());
+    mp_resultTable->setItem(0, REVERSE, createEmptyTableItem());
+    mp_resultTable->setCellWidget(0, FILENAME_CHECKBOX, createCenteredCheckBox(checkAllBox));
 
     QStringList headerLabels;
     headerLabels << "Filename" << "Author" << "Title" << "Rename file" << "";
@@ -112,7 +120,7 @@ void MainWindow::openDir(const QString& dirPath)
     mp_progressBar->setValue(0);
     mp_progressBar->setMaximum(m_songs.size());
     mp_progressBar->hide();
-    mp_resultTable->setRowCount(m_songs.size());
+    mp_resultTable->setRowCount(m_songs.size() + 1);
 
 }
 
@@ -150,18 +158,26 @@ void MainWindow::computeTags()
         displayResults();
 }
 
-QWidget* MainWindow::createCenteredCheckBox()
+QWidget* MainWindow::createCenteredCheckBox(QCheckBox *checkBox)
 {
     QWidget *widget = new QWidget;
     QHBoxLayout *layout = new QHBoxLayout;
 
     layout->setAlignment(Qt::AlignCenter);
     layout->setContentsMargins(0, 0, 0, 0);
-    layout->addWidget(new QCheckBox);
+    layout->addWidget(checkBox);
 
     widget->setLayout(layout);
 
     return widget;
+}
+
+QTableWidgetItem* MainWindow::createEmptyTableItem()
+{
+    QTableWidgetItem *item = new QTableWidgetItem;
+    item->setFlags(Qt::NoItemFlags);
+
+    return item;
 }
 
 void MainWindow::displayResults()
@@ -169,34 +185,50 @@ void MainWindow::displayResults()
     QSignalMapper *mapper = new QSignalMapper(this);
     connect(mapper, SIGNAL(mapped(int)), this, SLOT(reverse(int)));
 
+    QStringList rowLabels;
+    rowLabels << "";
+
     for (int i = 0; i < m_songs.size(); ++i)
     {
+        rowLabels << QString::number(i+1);
+
         QTableWidgetItem *filenameItem = new QTableWidgetItem(m_songs.at(i).getFilename());
         filenameItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
-        mp_resultTable->setItem(i, FILENAME, filenameItem);
-        mp_resultTable->setItem(i, AUTHOR, new QTableWidgetItem(m_songs.at(i).getAuthor()));
-        mp_resultTable->setItem(i, TITLE, new QTableWidgetItem(m_songs.at(i).getTitle()));
-        mp_resultTable->setCellWidget(i, FILENAME_CHECKBOX, createCenteredCheckBox());
+        mp_resultTable->setItem(i+1, FILENAME, filenameItem);
+        mp_resultTable->setItem(i+1, AUTHOR, new QTableWidgetItem(m_songs.at(i).getAuthor()));
+        mp_resultTable->setItem(i+1, TITLE, new QTableWidgetItem(m_songs.at(i).getTitle()));
+
+        mp_renamingChechBoxes.append(new QCheckBox);
+        mp_resultTable->setCellWidget(i+1, FILENAME_CHECKBOX, createCenteredCheckBox(mp_renamingChechBoxes.last()));
 
 
         QPushButton *reverseButton = new QPushButton(QIcon("../Project/images/reverse.png"), "");
-        mp_resultTable->setCellWidget(i, REVERSE, reverseButton);
+        mp_resultTable->setCellWidget(i+1, REVERSE, reverseButton);
 
         connect(reverseButton, SIGNAL(clicked()), mapper, SLOT(map()));
-        mapper->setMapping(reverseButton, i);
+        mapper->setMapping(reverseButton, i+1);
     }
 
     mp_resultTable->resizeColumnsToContents();
     mp_layout->setCurrentIndex(1);
+    mp_resultTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
+    mp_resultTable->setVerticalHeaderLabels(rowLabels);
     resize(800, 600);
 }
 
-void MainWindow::reverse(int row)
+void MainWindow::reverse(int row) const
 {
     const QString newAuthor = mp_resultTable->item(row, TITLE)->text();
     const QString newTitle = mp_resultTable->item(row, AUTHOR)->text();
 
     mp_resultTable->item(row, AUTHOR)->setText(newAuthor);
     mp_resultTable->item(row, TITLE)->setText(newTitle);
+}
+
+void MainWindow::checkAll(bool value) const
+{
+    for (QCheckBox *checkBox : mp_renamingChechBoxes)
+        checkBox->setChecked(value);
 }

@@ -8,6 +8,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
+#include <QCheckBox>
 #include "SongFile.h"
 
 class MainWindow : public QWidget
@@ -32,12 +33,16 @@ class MainWindow : public QWidget
 
         QListWidget *mp_SongsPreviewList;
 
+        QList<QCheckBox*> mp_renamingChechBoxes;
+
 
         QWidget* createStartPage();
 
         QWidget* createResultTable();
 
-        static QWidget* createCenteredCheckBox();
+        static QWidget* createCenteredCheckBox(QCheckBox *checkBox);
+
+        static QTableWidgetItem* createEmptyTableItem();
 
         QFileInfoList loadFiles(const QString& dirPath) const;
 
@@ -51,7 +56,9 @@ class MainWindow : public QWidget
 
         void selectDir();
 
-        void reverse(int row);
+        void reverse(int row) const;
+
+        void checkAll(bool value) const;
 
     public:
 
