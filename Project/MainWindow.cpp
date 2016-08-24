@@ -186,12 +186,21 @@ void MainWindow::applyTags()
     int successCount = result.count(true);
     mp_resultLabel->setText(QString::number(successCount) + " file(s) tagged");
 
-    for (int i = 0; i < result.count(); ++i)
+    for (int i = 0; i < result.size(); ++i)
     {
         QColor rowColor = (result[i] ? QColor("#5AA869") : QColor("#D83D3D"));
 
         for (auto col = 0; col < COLUMNS_COUNT-2; ++col)
             mp_resultTable->item(i+1, col)->setBackground(rowColor);
+    }
+
+    for (int i = 0; i < m_songs.size(); ++i)
+    {
+        if (mp_renamingChechBoxes[i]->isChecked())
+        {
+            if (m_songs[i].rename())
+                mp_resultTable->item(i+1, FILENAME)->setText(m_songs[i].getFilename());
+        }
     }
 }
 

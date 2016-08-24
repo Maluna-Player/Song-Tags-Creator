@@ -19,6 +19,9 @@ class SongFile
 
         QString m_author;
 
+
+        QString getComputedFilename() const;
+
     public:
 
         SongFile() {}
@@ -38,6 +41,8 @@ class SongFile
         void fill(const QString& author, const QString& title);
 
         void reverse();
+
+        bool rename();
 };
 
 #endif // SONGFILE

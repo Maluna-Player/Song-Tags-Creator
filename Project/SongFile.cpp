@@ -1,5 +1,6 @@
 #include "SongFile.h"
 #include <QFileInfo>
+#include <QDir>
 
 
 SongFile::SongFile(const QString &filepath)
@@ -35,6 +36,11 @@ QString SongFile::getAuthor() const
     return m_author;
 }
 
+QString SongFile::getComputedFilename() const
+{
+    return m_author + " - " + m_title;
+}
+
 QList<Choice_t> SongFile::getChoices(const QString& separator) const
 {
     QList<Choice_t> choices;
@@ -55,4 +61,22 @@ void SongFile::fill(const QString& author, const QString& title)
 void SongFile::reverse()
 {
     fill(getTitle(), getAuthor());
+}
+
+bool SongFile::rename()
+{
+    QFileInfo fileInfo(m_filepath);
+
+    const QString newFilename = getComputedFilename();
+    const QString newFilepath = fileInfo.path() + QDir::separator() + newFilename + "." + fileInfo.suffix();
+
+    if (QFile::rename(fileInfo.filePath(), newFilepath))
+    {
+        m_filepath = newFilepath;
+        m_filename = newFilename;
+
+        return true;
+    }
+
+    return false;
 }
