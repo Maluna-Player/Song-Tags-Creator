@@ -180,6 +180,14 @@ void MainWindow::computeTags()
 
 void MainWindow::applyTags()
 {
+    for (int i = 0; i < m_songs.size(); ++i)
+    {
+        const QString author = mp_resultTable->item(i+1, AUTHOR)->text();
+        const QString title = mp_resultTable->item(i+1, TITLE)->text();
+
+        m_songs[i].fill(author, title);
+    }
+
     TagsManager manager;
     QVector<bool> result =  manager.writeTags(m_songs);
 
