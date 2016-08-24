@@ -1,15 +1,23 @@
 #include "SongFile.h"
+#include <QFileInfo>
 
 
-SongFile::SongFile(const QString &filename)
-    : m_filename(filename)
+SongFile::SongFile(const QString &filepath)
 {
+    QFileInfo fileInfo(filepath);
 
+    m_filepath = fileInfo.filePath();
+    m_filename = fileInfo.completeBaseName();
 }
 
 SongFile::~SongFile()
 {
 
+}
+
+QString SongFile::getFilepath() const
+{
+    return m_filepath;
 }
 
 QString SongFile::getFilename() const

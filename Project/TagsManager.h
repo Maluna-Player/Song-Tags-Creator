@@ -37,6 +37,8 @@ class TagsManager : public QObject
         virtual ~TagsManager();
 
         bool compute(QVector<SongFile>& songs);
+
+        QVector<bool> writeTags(const QVector<SongFile>& songs);
 };
 
 #endif // TAGSMANAGER_H

@@ -11,6 +11,8 @@ class SongFile
 {
     private:
 
+        QString m_filepath;
+
         QString m_filename;
 
         QString m_title;
@@ -20,8 +22,10 @@ class SongFile
     public:
 
         SongFile() {}
-        SongFile(const QString& filename);
+        SongFile(const QString& filepath);
         virtual ~SongFile();
+
+        QString getFilepath() const;
 
         QString getFilename() const;
 

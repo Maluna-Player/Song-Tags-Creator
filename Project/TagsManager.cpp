@@ -1,5 +1,6 @@
 #include "TagsManager.h"
 #include "ChoiceDialog.h"
+#include <taglib/fileref.h>
 
 
 TagsManager::TagsManager() : m_processedSongsCount(0)
@@ -30,7 +31,7 @@ QList<SongFile*> TagsManager::deduceSongs(QVector<SongFile>& songs)
 {
     QList<SongFile*> nonDeducedSongs;
 
-    for (auto& song : songs)
+    for (SongFile& song : songs)
     {
         if (song.getFilename().contains(" - "))
         {
@@ -131,4 +132,34 @@ bool TagsManager::compute(QVector<SongFile>& songs)
     reverseSongs(songs);
 
     return true;
+}
+
+QVector<bool> TagsManager::writeTags(const QVector<SongFile>& songs)
+{
+    QVector<bool> result;
+
+    for (SongFile const& song : songs)
+    {
+        bool success = false;
+
+        if (!song.getAuthor().isEmpty() || !song.getTitle().isEmpty())
+        {
+            const QString songFilePath = song.getFilepath();
+            TagLib::FileRef file(songFilePath.toStdString().c_str());
+
+            if (!file.isNull() && file.tag())
+            {
+                TagLib::Tag *tag = file.tag();
+
+                tag->setArtist(song.getAuthor().toStdString());
+                tag->setTitle(song.getTitle().toStdString());
+
+                success = file.save();
+            }
+        }
+
+        result.append(success);
+    }
+
+    return result;
 }

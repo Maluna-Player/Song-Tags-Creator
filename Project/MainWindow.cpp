@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
     mp_layout = new QStackedLayout;
 
     mp_layout->addWidget(createStartPage());
-    mp_layout->addWidget(createResultTable());
+    mp_layout->addWidget(createResultPage());
 
     QPushButton *quitButton = new QPushButton("Quit");
 
@@ -74,8 +74,11 @@ QWidget* MainWindow::createStartPage()
     return startPage;
 }
 
-QWidget* MainWindow::createResultTable()
+QWidget* MainWindow::createResultPage()
 {
+    QWidget *resultPage = new QWidget;
+    QVBoxLayout *resultLayout = new QVBoxLayout;
+
     QCheckBox *checkAllBox = new QCheckBox("Check all");
     connect(checkAllBox, SIGNAL(clicked(bool)), this, SLOT(checkAll(bool)));
 
@@ -90,7 +93,25 @@ QWidget* MainWindow::createResultTable()
     headerLabels << "Filename" << "Author" << "Title" << "Rename file" << "";
     mp_resultTable->setHorizontalHeaderLabels(headerLabels);
 
-    return mp_resultTable;
+    QHBoxLayout *applyLayout = new QHBoxLayout;
+
+    mp_resultLabel = new QLabel;
+
+    QPushButton *applyButton = new QPushButton("Apply tags !");
+    applyButton->setFixedWidth(100);
+    connect(applyButton, SIGNAL(clicked()), this, SLOT(applyTags()));
+
+    applyLayout->addWidget(mp_resultLabel);
+    applyLayout->addStretch(1);
+    applyLayout->addWidget(applyButton);
+
+    resultLayout->addWidget(mp_resultTable);
+    resultLayout->addLayout(applyLayout);
+    resultLayout->addSpacing(10);
+
+    resultPage->setLayout(resultLayout);
+
+    return resultPage;
 }
 
 QFileInfoList MainWindow::loadFiles(const QString& dirPath) const
@@ -112,7 +133,7 @@ void MainWindow::openDir(const QString& dirPath)
 
     for (const QFileInfo& fileInfo : files)
     {
-        m_songs.append(SongFile(fileInfo.completeBaseName()));
+        m_songs.append(SongFile(fileInfo.filePath()));
         mp_SongsPreviewList->addItem(fileInfo.fileName());
     }
 
@@ -121,7 +142,6 @@ void MainWindow::openDir(const QString& dirPath)
     mp_progressBar->setMaximum(m_songs.size());
     mp_progressBar->hide();
     mp_resultTable->setRowCount(m_songs.size() + 1);
-
 }
 
 void MainWindow::selectDir()
@@ -156,6 +176,23 @@ void MainWindow::computeTags()
         openDir(mp_dirPath->text());
     else
         displayResults();
+}
+
+void MainWindow::applyTags()
+{
+    TagsManager manager;
+    QVector<bool> result =  manager.writeTags(m_songs);
+
+    int successCount = result.count(true);
+    mp_resultLabel->setText(QString::number(successCount) + " file(s) tagged");
+
+    for (int i = 0; i < result.count(); ++i)
+    {
+        QColor rowColor = (result[i] ? QColor("#5AA869") : QColor("#D83D3D"));
+
+        for (auto col = 0; col < COLUMNS_COUNT-2; ++col)
+            mp_resultTable->item(i+1, col)->setBackground(rowColor);
+    }
 }
 
 QWidget* MainWindow::createCenteredCheckBox(QCheckBox *checkBox)

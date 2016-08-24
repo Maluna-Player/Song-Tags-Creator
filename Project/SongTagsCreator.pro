@@ -17,3 +17,10 @@ HEADERS += \
     SongFile.h \
     ChoiceDialog.h \
     TagsManager.h
+
+
+# Add of TagLib library
+
+!win32 {            # Linux
+    LIBS += -ltag -lz
+}

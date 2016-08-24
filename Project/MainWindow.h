@@ -35,10 +35,12 @@ class MainWindow : public QWidget
 
         QList<QCheckBox*> mp_renamingChechBoxes;
 
+        QLabel *mp_resultLabel;
+
 
         QWidget* createStartPage();
 
-        QWidget* createResultTable();
+        QWidget* createResultPage();
 
         static QWidget* createCenteredCheckBox(QCheckBox *checkBox);
 
@@ -53,6 +55,8 @@ class MainWindow : public QWidget
     private slots:
 
         void computeTags();
+
+        void applyTags();
 
         void selectDir();
 
