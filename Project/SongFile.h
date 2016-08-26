@@ -4,6 +4,7 @@
 #include <QString>
 #include <QPair>
 #include <QList>
+#include <QStringList>
 
 using Choice_t = QPair<QString,QString>;
 
@@ -17,7 +18,7 @@ class SongFile
 
         QString m_title;
 
-        QString m_author;
+        QStringList m_authors;
 
 
         QString getComputedFilename() const;
@@ -34,11 +35,11 @@ class SongFile
 
         QString getTitle() const;
 
-        QString getAuthor() const;
+        QStringList getAuthors() const;
 
         QList<Choice_t> getChoices(const QString& separator) const;
 
-        void fill(const QString& author, const QString& title);
+        void fill(const QStringList& authors, const QString& title);
 
         void reverse();
 

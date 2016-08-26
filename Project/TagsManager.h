@@ -15,6 +15,10 @@ class TagsManager : public QObject
 
         static const unsigned int minimumRefs { 3 };
 
+        static const QList<QString> elementsSeparators;
+
+        static const QList<QString> authorsSeparators;
+
 
         void fillSong(SongFile& song, const QString& author, const QString& title);
 

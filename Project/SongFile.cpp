@@ -31,14 +31,26 @@ QString SongFile::getTitle() const
     return m_title;
 }
 
-QString SongFile::getAuthor() const
+QStringList SongFile::getAuthors() const
 {
-    return m_author;
+    return m_authors;
 }
 
 QString SongFile::getComputedFilename() const
 {
-    return m_author + " - " + m_title;
+    QString filename;
+
+    if (m_authors.isEmpty())
+        filename = m_title;
+    else
+    {
+        filename = m_authors[0] + " - " + m_title;
+
+        if (m_authors.size() > 1)
+            filename += " feat. " + m_authors.mid(1).join(" & ");
+    }
+
+    return filename;
 }
 
 QList<Choice_t> SongFile::getChoices(const QString& separator) const
@@ -52,15 +64,26 @@ QList<Choice_t> SongFile::getChoices(const QString& separator) const
     return choices;
 }
 
-void SongFile::fill(const QString& author, const QString& title)
+void SongFile::fill(const QStringList& authors, const QString& title)
 {
-    m_author = author;
+    m_authors = authors;
     m_title = title;
 }
 
 void SongFile::reverse()
 {
-    fill(getTitle(), getAuthor());
+    if (m_authors.isEmpty())
+    {
+        m_authors.append(m_title);
+        m_title.clear();
+    }
+    else
+    {
+        QString title{m_authors[0]};
+
+        m_authors[0] = m_title;
+        m_title = title;
+    }
 }
 
 bool SongFile::rename()

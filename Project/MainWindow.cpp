@@ -90,7 +90,7 @@ QWidget* MainWindow::createResultPage()
     mp_resultTable->setCellWidget(0, FILENAME_CHECKBOX, createCenteredCheckBox(checkAllBox));
 
     QStringList headerLabels;
-    headerLabels << "Filename" << "Author" << "Title" << "Rename file" << "";
+    headerLabels << "Filename" << "Author(s)" << "Title" << "Rename file" << "";
     mp_resultTable->setHorizontalHeaderLabels(headerLabels);
 
     QHBoxLayout *applyLayout = new QHBoxLayout;
@@ -182,10 +182,12 @@ void MainWindow::applyTags()
 {
     for (int i = 0; i < m_songs.size(); ++i)
     {
-        const QString author = mp_resultTable->item(i+1, AUTHOR)->text();
+        const QString authorStr = mp_resultTable->item(i+1, AUTHOR)->text();
+
+        const QStringList authors = (authorStr.isEmpty() ? QStringList() : authorStr.split(";"));
         const QString title = mp_resultTable->item(i+1, TITLE)->text();
 
-        m_songs[i].fill(author, title);
+        m_songs[i].fill(authors, title);
     }
 
     TagsManager manager;
@@ -250,7 +252,7 @@ void MainWindow::displayResults()
         filenameItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
         mp_resultTable->setItem(i+1, FILENAME, filenameItem);
-        mp_resultTable->setItem(i+1, AUTHOR, new QTableWidgetItem(m_songs.at(i).getAuthor()));
+        mp_resultTable->setItem(i+1, AUTHOR, new QTableWidgetItem(m_songs.at(i).getAuthors().join(";")));
         mp_resultTable->setItem(i+1, TITLE, new QTableWidgetItem(m_songs.at(i).getTitle()));
 
         mp_renamingChechBoxes.append(new QCheckBox);
